@@ -8,6 +8,7 @@ const ProductDetailsScreen = () => {
   const {width} = useWindowDimensions();
   const addToCart = () =>{
     dispatch(cartSlice.actions.addCartItem({product}));
+    console.warn('Added')
   }
   return (
     <View>
