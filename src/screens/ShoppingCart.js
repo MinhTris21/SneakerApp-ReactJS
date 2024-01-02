@@ -1,8 +1,8 @@
-import { FlatList, View, StyleSheet, Text, Pressable } from "react-native";
-import cart from "../data/cart";
+import { FlatList, View, StyleSheet, Text, Pressable, Alert } from "react-native";
+import { useCreateOrderMutation } from "../store/apiSlice";
 import CartListItem from "../components/CartListItem";
-import { useSelector } from "react-redux";
-import { selectDeliveryPrice, selectSubtotal, selectTotal } from "../store/cartSlice";
+import { useDispatch, useSelector } from "react-redux";
+import { selectDeliveryPrice, selectSubtotal, selectTotal, cartSlice } from "../store/cartSlice";
 const ShoppingCartTotal = () =>{
   const subtotal = useSelector(selectSubtotal)
   const deliveryFee = useSelector(selectDeliveryPrice)
@@ -26,6 +26,32 @@ const ShoppingCartTotal = () =>{
 }
 
 const ShoppingCart = () =>{
+  const subtotal = useSelector(selectSubtotal)
+  const deliveryFee = useSelector(selectDeliveryPrice)
+  const total = useSelector(selectTotal)
+  const dispatch = useDispatch();
+  const [createOrder, {data, isLoading, error}] = useCreateOrderMutation();
+  const onCreateOrder =  async () =>
+  {
+   const result = await createOrder({
+      items: cartItem,
+      subtotal,
+      deliveryFee,
+      customer:{
+        name: "MinhTris",
+        address: "Ho Chi Minh",
+        email:"minhtris@gmail.com"
+      }
+    })
+    if (result.data?.status == 'Ok')
+  {
+    Alert.alert(
+      'Order has been submited',
+      `Your payment code is: ${result.data.data.ref}`
+    )
+    dispatch(cartSlice.actions.clear());
+  }
+  }
   const cartItem = useSelector((state) => state.cart.items)
     return(
         <>
@@ -34,7 +60,8 @@ const ShoppingCart = () =>{
         renderItem = {({item}) => <CartListItem cartItem ={item}  />}
         ListFooterComponent ={ShoppingCartTotal}
         />
-        <Pressable style ={styles.button}>
+        <Pressable onPress ={onCreateOrder}
+        style ={styles.button}>
         <Text style = {styles.buttonText}>Check Out</Text>
       </Pressable>
       </>

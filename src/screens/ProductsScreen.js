@@ -1,19 +1,25 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, Image, FlatList, Pressable } from 'react-native';
-import { useDispatch, useSelector } from 'react-redux';
-import products from '../data/products';
-import { productsSlice } from '../store/productsSlice';
-const ProductsScreen = ({navigation}) =>{
-  const  dispatch = useDispatch();
-  const products = useSelector((state) => state.products.products)
+import { StyleSheet, Text, View, Image, FlatList, Pressable, ActivityIndicator } from 'react-native';
+import { useGetProductsQuery } from '../store/apiSlice';
 
+
+const ProductsScreen = ({navigation}) =>{
+  const {data, isLoading, error} = useGetProductsQuery();
+  if (isLoading)
+  {
+    return <ActivityIndicator/>
+  }
+  if (error)
+  {
+    return <Text>Error fetching products {error.error}</Text>
+  }
+  const products = data.data
     return(
       <FlatList
         data={products}
         renderItem ={({ item }) => (
       <Pressable onPress = {() => 
-        {dispatch(productsSlice.actions.setSelectedProduct(item.id))
-        navigation.navigate('Product Details')} }
+        {
+        navigation.navigate('Product Details',{id: item._id})} } 
       style = {styles.itemcontainer}>
       <Image source={{uri: item.image,}} style ={styles.image}/>
       </Pressable>
